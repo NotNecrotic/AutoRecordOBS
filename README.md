@@ -10,6 +10,7 @@ AutoRecordOBS is a system-tray-based utility that automatically detects when you
 - Start delay: Delay before recording begins to avoid unnecessary captures such as loading screens.
 - Toggle automation: Pause/resume automatic recording at any time.
 - Config reload & edit: Edit JSON config directly from the tray, and reload without restarting the app.
+- Start at boot: Is able to start when windows has booted.
 
 ## Installation
 
@@ -31,15 +32,21 @@ All settings are stored in config.json (created automatically on first run).
 ```
 {
     "check_interval": 2,
-    "start_delay": 5,
+    "start_delay": 2,
+    "stop_delay": 2,
+    "start_with_windows": False,
     "games": {
-        "VRChat.exe": {}
+        "VRChat.exe": {
+            "start_delay": "default",
+            "stop_delay": "default"
+        }
     }
 }
 ```
 - ```check_interval``` → How often (seconds) the app checks for running games.
 - ```start_delay``` → Delay before starting recording after the game is detected running.
-- ```games``` → List of game executables to auto-record.
+- ```stop_delay``` → Delay before stopping recording after the game is no longer detected running.
+- ```games``` → List of game executables to auto-record. (The start and stop delay for each game overrides the main variables if not set to default.)
 
 ## Development
 
