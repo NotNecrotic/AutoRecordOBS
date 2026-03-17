@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoRecOBS", "AutoRecOBS\AutoRecOBS.csproj", "{5FFC5BB5-F381-E609-90CB-19F447758216}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5FFC5BB5-F381-E609-90CB-19F447758216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FFC5BB5-F381-E609-90CB-19F447758216}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FFC5BB5-F381-E609-90CB-19F447758216}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FFC5BB5-F381-E609-90CB-19F447758216}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {954A3595-7907-4B4B-83D0-A04D54437F2C}
+	EndGlobalSection
+EndGlobal

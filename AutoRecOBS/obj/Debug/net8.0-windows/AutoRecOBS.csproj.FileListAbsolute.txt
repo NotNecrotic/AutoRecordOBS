@@ -1,0 +1,5 @@
+C:\Users\Necrotic\Documents\GitHub\AutoRecordOBS\AutoRecOBS\obj\Debug\net8.0-windows\AutoRecOBS.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Necrotic\Documents\GitHub\AutoRecordOBS\AutoRecOBS\obj\Debug\net8.0-windows\AutoRecOBS.AssemblyInfoInputs.cache
+C:\Users\Necrotic\Documents\GitHub\AutoRecordOBS\AutoRecOBS\obj\Debug\net8.0-windows\AutoRecOBS.AssemblyInfo.cs
+C:\Users\Necrotic\Documents\GitHub\AutoRecordOBS\AutoRecOBS\obj\Debug\net8.0-windows\AutoRecOBS.csproj.CoreCompileInputs.cache
+C:\Users\Necrotic\Documents\GitHub\AutoRecordOBS\AutoRecOBS\obj\Debug\net8.0-windows\AutoRecOBS.sourcelink.json

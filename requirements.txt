@@ -1,4 +1,0 @@
-psutil
-pystray
-Pillow
-winshell
