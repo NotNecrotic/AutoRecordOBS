@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoRecOBS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a1941163863774fcfe6bd507cf545bbc379b468d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+087c2c41285e1d4971dd0c5f11d71bb4ebb4a8da")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoRecOBS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoRecOBS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

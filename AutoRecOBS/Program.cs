@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Drawing;
 
 class GameConfig
 {
@@ -18,10 +19,15 @@ class Config
     public int check_interval { get; set; } = 2;
     public int start_delay { get; set; } = 2;
     public int stop_delay { get; set; } = 2;
+
     public bool start_with_windows { get; set; } = false;
+    public bool use_replay_buffer { get; set; } = false;
+    public bool pause_when_minimized { get; set; } = true;
+    public bool first_run { get; set; } = true;
+
     public Dictionary<string, GameConfig> games { get; set; } = new Dictionary<string, GameConfig>()
     {
-        { "VRChat.exe", new GameConfig() }
+        { "Game.exe", new GameConfig() }
     };
 }
 
@@ -194,6 +200,29 @@ static class Program
             .Any(p => p.ProcessName.ToLower().Contains("obs"));
     }
 
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    static extern IntPtr GetForegroundWindow();
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    static extern int GetWindowThreadProcessId(IntPtr hWnd, out int processId);
+
+    static bool IsGameFocused(string exe)
+    {
+        var handle = GetForegroundWindow();
+        GetWindowThreadProcessId(handle, out int pid);
+
+        try
+        {
+            var proc = Process.GetProcessById(pid);
+            return (proc.ProcessName + ".exe")
+                .Equals(exe, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     static void Obs(string args)
     {
         Process.Start(new ProcessStartInfo
@@ -207,13 +236,21 @@ static class Program
 
     static void StartRecording()
     {
-        Obs("recording start");
+        if (config.use_replay_buffer)
+            Obs("replaybuffer start");
+        else
+            Obs("recording start");
+
         recording = true;
     }
 
     static void StopRecording()
     {
-        Obs("recording stop");
+        if (config.use_replay_buffer)
+            Obs("replaybuffer stop");
+        else
+            Obs("recording stop");
+
         recording = false;
     }
 
@@ -228,7 +265,7 @@ static class Program
     // ==============================
     // Main GUI Form
     // ==============================
-    class MainForm : Form
+   class MainForm : Form
     {
         DataGridView gameGrid = new DataGridView();
         Button addBtn = new Button();
@@ -238,6 +275,15 @@ static class Program
         Label statusLabel = new Label();
         NumericUpDown globalStartDelay = new NumericUpDown();
         NumericUpDown globalStopDelay = new NumericUpDown();
+
+        NotifyIcon trayIcon;
+        ContextMenuStrip trayMenu;
+        bool allowExit = false;
+
+        Icon idleIcon;
+        Icon recordingIcon;
+
+        ListBox logBox = new ListBox();
 
         public MainForm()
         {
@@ -290,8 +336,135 @@ static class Program
             Controls.Add(globalStartDelay);
             Controls.Add(globalStopDelay);
 
+            // Live activity
+            logBox.Top = 430;
+            logBox.Left = 10;
+            logBox.Width = 660;
+            logBox.Height = 60;
+            Controls.Add(logBox);
+
+            // =========================
+            // Tray setup
+            // =========================
+            idleIcon = CreateCircleIcon(Color.Gray);
+            recordingIcon = CreateCircleIcon(Color.Red);
+
+            trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add("Show", null, (s, e) =>
+            {
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+            });
+            trayMenu.Items.Add("Exit", null, (s, e) =>
+            {
+                allowExit = true;
+                trayIcon.Visible = false;
+                Application.Exit();
+            });
+
+            trayMenu.Items.Add("Start Recording", null, (s, e) =>
+            {
+                StartRecording();
+                Log("▶ Manual start");
+            });
+
+            trayMenu.Items.Add("Stop Recording", null, (s, e) =>
+            {
+                StopRecording();
+                Log("⏹ Manual stop");
+            });
+
+            trayIcon = new NotifyIcon()
+            {
+                Text = "AutoRecordOBS - Idle",
+                Icon = idleIcon,
+                ContextMenuStrip = trayMenu,
+                Visible = true
+            };
+
+            trayIcon.DoubleClick += (s, e) =>
+            {
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+            };
+
+            if (config.first_run)
+            {
+                MessageBox.Show(
+                    "Welcome!\n\n1. Make sure OBS is running\n2. Add your games\n3. Enable replay buffer if desired",
+                    "First Time Setup"
+                );
+
+                config.first_run = false;
+                File.WriteAllText("config.json", JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true }));
+            }
+
             // Start monitor loop
             new Thread(MonitorLoop) { IsBackground = true }.Start();
+        }
+
+        void Log(string msg)
+            {
+                Invoke(new Action(() =>
+                {
+                    string line = $"[{DateTime.Now:HH:mm:ss}] {msg}";
+                    logBox.Items.Insert(0, line);
+
+                    if (logBox.Items.Count > 100)
+                        logBox.Items.RemoveAt(logBox.Items.Count - 1);
+                }));
+            }
+
+        // =========================
+        // Generate Icons
+        // =========================      
+        Icon CreateCircleIcon(Color color)
+        {
+            int size = 16;
+            Bitmap bmp = new Bitmap(size, size);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+                using (Brush brush = new SolidBrush(color))
+                {
+                    g.FillEllipse(brush, 2, 2, size - 4, size - 4);
+                }
+            }
+
+            return Icon.FromHandle(bmp.GetHicon());
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (!allowExit && e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.Hide();
+
+                trayIcon.ShowBalloonTip(
+                    1000,
+                    "Still running",
+                    "App minimized to tray",
+                    ToolTipIcon.Info
+                );
+            }
+            else
+            {
+                trayIcon.Visible = false;
+            }
+
+            base.OnFormClosing(e);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Hide();
+            }
         }
 
         void LoadGames()
@@ -369,21 +542,42 @@ static class Program
                 {
                     activeGame = running[0];
 
-                    if (ObsRunning())
-                        StartRecording();
+                    // Focus check
+                    if (config.pause_when_minimized && !IsGameFocused(activeGame))
+                    {
+                        Log($"⏸ {activeGame} not focused");
+                    }
+                    else
+                    {
+                        // OBS check
+                        if (!ObsRunning())
+                        {
+                            Log("⚠ OBS not running");
+                        }
+                        else
+                        {
+                            // Start recording / replay buffer
+                            StartRecording();
+                            Log($"▶ Started {(config.use_replay_buffer ? "Replay Buffer" : "Recording")} ({activeGame})");
+                        }
+                    }
                 }
                 else if (running.Length == 0 && recording)
                 {
                     StopRecording();
+                    Log("⏹ Stopped recording");
                     activeGame = "None";
                 }
 
-                // Update status label
                 Invoke(new Action(() =>
                 {
-                    statusLabel.Text = $"Status: {(recording ? "Recording" : "Idle")} | Active Game: {activeGame}";
-                }));
+                    bool isRecording = recording;
 
+                    statusLabel.Text = $"Status: {(isRecording ? "Recording" : "Idle")} | Active Game: {activeGame}";
+                    trayIcon.Text = $"AutoRecordOBS - {(isRecording ? "Recording" : "Idle")}";
+
+                    trayIcon.Icon = isRecording ? recordingIcon : idleIcon;
+                }));
                 Thread.Sleep(config.check_interval * 1000);
             }
         }
