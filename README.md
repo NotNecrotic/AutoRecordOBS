@@ -36,7 +36,7 @@ All settings are stored in config.json (created automatically on first run).
     "stop_delay": 2,
     "start_with_windows": False,
     "games": {
-        "VRChat.exe": {
+        "Game.exe": {
             "start_delay": "default",
             "stop_delay": "default"
         }
