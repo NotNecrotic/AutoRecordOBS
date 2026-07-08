@@ -16,16 +16,15 @@ use crate::monitor::{spawn_monitor_thread, IconColor, RuntimeState};
 use crate::utils::{icon_circle, obs_stop, open_config_in_editor, set_startup};
 
 fn main() {
-    let mut initial_config = load_config();
+    let initial_config = load_config();
     set_startup(initial_config.start_with_windows);
 
     let config = Arc::new(Mutex::new(initial_config.clone()));
     let state = Arc::new(Mutex::new(RuntimeState::default()));
 
-    // Spawn Background Automation Thread
+    // Background Thread
     spawn_monitor_thread(Arc::clone(&config), Arc::clone(&state));
 
-    // Initialize Native Event Loop
     let event_loop = EventLoopBuilder::new().build();
 
     // Create Tray Menu Items
@@ -65,7 +64,7 @@ fn main() {
     let _tray_channel = TrayIconEvent::receiver();
 
     // Event Loop
-    event_loop.run(move |event, _, control_flow| {
+    event_loop.run(move |_event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + Duration::from_millis(200));
 
         // ----------------------------------------------------
@@ -101,7 +100,7 @@ fn main() {
                 if s.recording {
                     obs_stop();
                 }
-                tray_icon.take(); // Drop tray icon from taskbar
+                tray_icon.take();
                 *control_flow = ControlFlow::Exit;
             }
         }

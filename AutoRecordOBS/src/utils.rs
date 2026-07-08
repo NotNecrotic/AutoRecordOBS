@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use tray_icon::Icon;
@@ -5,6 +6,7 @@ use winreg::enums::*;
 use winreg::RegKey;
 
 pub const APP_NAME: &str = "AutoRecordOBS";
+const OBS_CMD_BYTES: &[u8] = include_bytes!("../bin/obs-cmd.exe");
 pub const OBS_CMD_NAME: &str = "obs-cmd.exe";
 
 pub fn set_startup(enable: bool) {
@@ -24,10 +26,22 @@ pub fn set_startup(enable: bool) {
     }
 }
 
+// =====================================================================
+// STANDALONE BUILD
+// Embeds the binary directly into the executable at compile time.
+// =====================================================================
 pub fn obs_cmd_path() -> PathBuf {
     let mut path = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
-    path.pop();
-    path.join(OBS_CMD_NAME)
+    path.pop(); 
+    path.push(OBS_CMD_NAME);
+
+    if !path.exists() {
+        if let Err(e) = fs::write(&path, OBS_CMD_BYTES) {
+            eprintln!("Failed to extract embedded obs-cmd.exe: {}", e);
+        }
+    }
+
+    path
 }
 
 pub fn run_obs(args: &[&str]) {
@@ -54,7 +68,6 @@ pub fn open_config_in_editor() {
         .spawn();
 }
 
-/// Generates a 64x64 RGBA circular icon directly in memory (replaces PIL ImageDraw)
 pub fn icon_circle(r: u8, g: u8, b: u8) -> Icon {
     let width = 64;
     let height = 64;
@@ -67,7 +80,6 @@ pub fn icon_circle(r: u8, g: u8, b: u8) -> Icon {
             let dx = x as i32 - center;
             let dy = y as i32 - center;
             
-            // If inside circle radius, color it; otherwise make it a white background
             if dx * dx + dy * dy <= radius * radius {
                 rgba.extend_from_slice(&[r, g, b, 255]);
             } else {

@@ -71,7 +71,6 @@ pub fn spawn_monitor_thread(
                 (cfg.check_interval, games, cfg.clone())
             };
 
-            // Check if application is terminating
             {
                 let s = state.lock().unwrap();
                 if !s.monitoring {
@@ -145,7 +144,6 @@ pub fn spawn_monitor_thread(
                     }
                 }
             } else {
-                // Reset timers if conditions revert before debounce completes
                 if !running_games.is_empty() {
                     stop_delay_timer = None;
                 } else {
