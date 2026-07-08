@@ -25,7 +25,7 @@ impl Default for AppConfig {
     fn default() -> Self {
         let mut games = HashMap::new();
         games.insert(
-            "VRChat.exe".to_string(),
+            "example.exe".to_string(),
             GameSettings {
                 start_delay: Value::String("default".to_string()),
                 stop_delay: Value::String("default".to_string()),
