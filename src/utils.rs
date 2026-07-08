@@ -4,10 +4,12 @@ use std::process::Command;
 use tray_icon::Icon;
 use winreg::enums::*;
 use winreg::RegKey;
+use std::os::windows::process::CommandExt;
 
 pub const APP_NAME: &str = "AutoRecordOBS";
 const OBS_CMD_BYTES: &[u8] = include_bytes!("../bin/obs-cmd.exe");
 pub const OBS_CMD_NAME: &str = "obs-cmd.exe";
+pub const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 pub fn set_startup(enable: bool) {
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
@@ -50,6 +52,7 @@ pub fn run_obs(args: &[&str]) {
         .args(args)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
+        .creation_flags(CREATE_NO_WINDOW)
         .spawn();
 }
 
