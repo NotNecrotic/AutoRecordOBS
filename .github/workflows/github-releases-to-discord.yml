@@ -1,0 +1,23 @@
+on:
+  release:
+    types: [published]
+
+jobs:
+  github-releases-to-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: GitHub Releases to Discord
+        uses: SethCohen/github-releases-to-discord@v1
+        with:
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          content: "||@everyone||"
+          embed_title: "🚀 New Release: ${{ github.event.release.tag_name }}"
+          embed_url: "${{ github.event.release.html_url }}"
+          embed_description: "A new version is available! Click the title to see the changelog and download the binary."
+          embed_color: "2105893"
+          embed_footer_text: "AutoRecordOBS"
+          embed_timestamp: "now"
+          footer_title: "Changelog"
+          reduce_headings: true
