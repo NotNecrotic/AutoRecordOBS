@@ -1,1 +1,0 @@
-{"check_interval":2,"start_delay":2,"stop_delay":2,"start_with_windows":false,"use_replay_buffer":false,"pause_when_minimized":true,"first_run":false,"games":{"Game.exe":{"start_delay":"default","stop_delay":"default"}}}
