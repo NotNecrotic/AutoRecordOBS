@@ -52,7 +52,7 @@ All settings are stored in config.json (created automatically on first run).
 - ```stop_delay``` → Delay before stopping recording after the game is no longer detected running.
 - ```games``` → List of game executables to auto-record. (The start and stop delay for each game overrides the main variables if not set to default.)
 
-> Note: Games will need to be added to the config in order for this program will work.
+> Note: Games will need to be added to the config in order for this program to work.
 
 ## Development
 
