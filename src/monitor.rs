@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use sysinfo::System;
+use sysinfo::ProcessesToUpdate;
 use crate::config::{resolve_delay, AppConfig};
 use crate::utils::{obs_start, obs_stop};
 
@@ -38,7 +39,7 @@ impl Default for RuntimeState {
 
 pub fn is_obs_running(sys: &System) -> bool {
     sys.processes().values().any(|p| {
-        p.name().to_lowercase().contains("obs")
+        p.name().to_string_lossy().to_lowercase().contains("obs")
     })
 }
 
@@ -46,9 +47,9 @@ pub fn get_running_games(sys: &System, configured_games: &[String]) -> Vec<Strin
     let mut found = Vec::new();
     for process in sys.processes().values() {
         let name = process.name();
-        if configured_games.iter().any(|g| g.eq_ignore_ascii_case(name)) {
-            if !found.contains(&name.to_string()) {
-                found.push(name.to_string());
+        if configured_games.iter().any(|g| g.to_lowercase() == name.to_string_lossy().to_lowercase()) {
+            if !found.contains(&name.to_string_lossy().to_string()) {
+                found.push(name.to_string_lossy().to_string());
             }
         }
     }
@@ -83,7 +84,7 @@ pub fn spawn_monitor_thread(
                 }
             }
 
-            sys.refresh_processes();
+            sys.refresh_processes(ProcessesToUpdate::All, true);
             let running_games = get_running_games(&sys, &configured_games);
             let obs_active = is_obs_running(&sys);
 
