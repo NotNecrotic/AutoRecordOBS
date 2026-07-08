@@ -12,7 +12,7 @@ jobs:
         uses: SethCohen/github-releases-to-discord@v1
         with:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
-          content: "||@everyone||"
+          content: "||@GitHub Pings||"
           color: "2105893"
           footer_title: "Changelog"
           reduce_headings: "true"
