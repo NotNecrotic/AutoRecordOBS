@@ -1,3 +1,4 @@
+use directories::BaseDirs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -43,9 +44,19 @@ impl Default for AppConfig {
 }
 
 pub fn get_config_path() -> PathBuf {
-    let mut path = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
-    path.pop();
-    path.join(CONFIG_FILE)
+    if let Some(base_dirs) = BaseDirs::new() {
+        let mut config_dir = base_dirs.config_dir().to_path_buf();
+
+       config_dir.push("AutoRecordOBS");
+
+        if !config_dir.exists() {
+            let _ = fs::create_dir_all(&config_dir);
+        }
+        
+        return config_dir.join("config.json");
+    }
+
+    PathBuf::from("config.json")
 }
 
 pub fn load_config() -> AppConfig {
