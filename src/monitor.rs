@@ -7,10 +7,10 @@ use crate::config::{resolve_delay, AppConfig};
 use crate::utils::{obs_start, obs_stop, obs_scene_switch};
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum IconColor {
-    Red,
-    Green,
-    Orange,
+pub enum TrayStatus {
+    Idle,
+    Recording,
+    Paused,
 }
 
 pub struct RuntimeState {
@@ -18,7 +18,7 @@ pub struct RuntimeState {
     pub monitoring: bool,
     pub automation_enabled: bool,
     pub active_game: String,
-    pub icon_color: IconColor,
+    pub tray_status: TrayStatus,
     pub tooltip: String,
     pub ui_needs_update: bool,
 }
@@ -30,7 +30,7 @@ impl Default for RuntimeState {
             monitoring: true,
             automation_enabled: true,
             active_game: "None".to_string(),
-            icon_color: IconColor::Red,
+            tray_status: TrayStatus::Idle,
             tooltip: "Idle".to_string(),
             ui_needs_update: true,
         }
@@ -103,7 +103,7 @@ pub fn spawn_monitor_thread(
             if s.recording && !obs_active {
                 s.recording = false;
                 s.active_game = "None".to_string();
-                s.icon_color = IconColor::Red;
+                s.tray_status = TrayStatus::Idle;
                 s.tooltip = "OBS stopped".to_string();
                 s.ui_needs_update = true;
             }
@@ -124,7 +124,7 @@ pub fn spawn_monitor_thread(
                             start_delay_timer = None;
                             stop_delay_timer = None;
 
-                            s.icon_color = IconColor::Green;
+                            s.tray_status = TrayStatus::Recording;
                             s.tooltip = format!("Recording {}", s.active_game);
                             s.ui_needs_update = true;
                         }
@@ -144,7 +144,7 @@ pub fn spawn_monitor_thread(
                             s.active_game = "None".to_string();
                             stop_delay_timer = None;
 
-                            s.icon_color = IconColor::Red;
+                            s.tray_status = TrayStatus::Idle;
                             s.tooltip = "Idle".to_string();
                             s.ui_needs_update = true;
                         }

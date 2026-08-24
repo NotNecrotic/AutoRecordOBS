@@ -12,8 +12,15 @@ use tray_icon::menu::{CheckMenuItem, Menu, MenuEvent, MenuItem, PredefinedMenuIt
 use tray_icon::{TrayIconBuilder, TrayIconEvent};
 
 use crate::config::{load_config, save_config};
-use crate::monitor::{spawn_monitor_thread, IconColor, RuntimeState};
-use crate::utils::{icon_circle, obs_stop, open_config_in_editor, set_startup};
+use crate::monitor::{spawn_monitor_thread, TrayStatus, RuntimeState};
+use crate::utils::{
+    obs_stop,
+    open_config_in_editor,
+    set_startup,
+    tray_idle_icon,
+    tray_paused_icon,
+    tray_recording_icon,
+};
 
 fn main() {
     let initial_config = load_config();
@@ -52,7 +59,7 @@ fn main() {
         TrayIconBuilder::new()
             .with_menu(Box::new(menu))
             .with_tooltip("Idle")
-            .with_icon(icon_circle(255, 0, 0))
+            .with_icon(tray_idle_icon())
             .build()
             .expect("Failed to build tray icon"),
     );
@@ -77,20 +84,20 @@ fn main() {
                 item_startup.set_checked(new_cfg.start_with_windows);
                 *config.lock().unwrap() = new_cfg;
             } else if event.id == item_pause.id() {
-                let mut runtime = state.lock().unwrap();
-                runtime.automation_enabled = !item_pause.is_checked();
-                runtime.ui_needs_update = true;
-                if !runtime.automation_enabled {
-                    runtime.icon_color = IconColor::Orange;
-                    runtime.tooltip = "Paused".to_string();
+                let mut s = state.lock().unwrap();
+                s.automation_enabled = !item_pause.is_checked();
+                s.ui_needs_update = true;
+                if !s.automation_enabled {
+                    s.tray_status = TrayStatus::Paused;
+                    s.tooltip = "Paused".to_string();
                 } else {
-                    runtime.icon_color = if runtime.recording { IconColor::Green } else { IconColor::Red };
-                    runtime.tooltip = if runtime.recording { format!("Recording {}", runtime.active_game) } else { "Idle".to_string() };
+                    s.tray_status = if s.recording { TrayStatus::Recording } else { TrayStatus::Idle };
+                    s.tooltip = if s.recording { format!("Recording {}", s.active_game) } else { "Idle".to_string() };
                 }
             } else if event.id == item_exit.id() {
-                let mut runtime = state.lock().unwrap();
-                runtime.monitoring = false;
-                if runtime.recording {
+                let mut s = state.lock().unwrap();
+                s.monitoring = false;
+                if s.recording {
                     obs_stop();
                 }
                 tray_icon.take();
@@ -98,26 +105,26 @@ fn main() {
             }
         }
 
-        let mut runtime = state.lock().unwrap();
-        if runtime.ui_needs_update {
+        let mut s = state.lock().unwrap();
+        if s.ui_needs_update {
             if let Some(tray) = tray_icon.as_mut() {
-                let _ = tray.set_tooltip(Some(&runtime.tooltip));
+                let _ = tray.set_tooltip(Some(&s.tooltip));
                 
-                match runtime.icon_color {
-                    IconColor::Red => { let _ = tray.set_icon(Some(icon_circle(255, 0, 0))); },
-                    IconColor::Green => { let _ = tray.set_icon(Some(icon_circle(0, 255, 0))); },
-                    IconColor::Orange => { let _ = tray.set_icon(Some(icon_circle(255, 165, 0))); },
+                match s.tray_status {
+                    TrayStatus::Idle => { let _ = tray.set_icon(Some(tray_idle_icon())); },
+                    TrayStatus::Recording => { let _ = tray.set_icon(Some(tray_recording_icon())); },
+                    TrayStatus::Paused => { let _ = tray.set_icon(Some(tray_paused_icon())); },
                 }
 
-                if runtime.recording {
-                    item_game.set_text(format!("🎮 {}", runtime.active_game));
+                if s.recording {
+                    item_game.set_text(format!("🎮 {}", s.active_game));
                     item_rec.set_text("⏺ Recording");
                 } else {
                     item_game.set_text("Idle");
                     item_rec.set_text("⏹ Not Recording");
                 }
             }
-            runtime.ui_needs_update = false;
+            s.ui_needs_update = false;
         }
     });
 }

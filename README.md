@@ -1,4 +1,6 @@
-# AutoRecordOBS
+<p align="center">
+  <img src="assets/title.png" alt="AutoRecordOBS" width="1080">
+</p>
 
 AutoRecordOBS is a system-tray-based utility that automatically detects when your games are running and tells OBS to start and stop recording.
 

@@ -9,6 +9,9 @@ use std::os::windows::process::CommandExt;
 pub const APP_NAME: &str = "AutoRecordOBS";
 const OBS_CMD_BYTES: &[u8] = include_bytes!("../bin/obs-cmd.exe");
 pub const OBS_CMD_NAME: &str = "obs-cmd.exe";
+const TRAY_IDLE: &[u8] = include_bytes!("../assets/idle.png");
+const TRAY_PAUSED: &[u8] = include_bytes!("../assets/pause.png");
+const TRAY_RECORDING: &[u8] = include_bytes!("../assets/record.png");
 pub const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 pub fn set_startup(enable: bool) {
@@ -71,25 +74,29 @@ pub fn open_config_in_editor() {
         .spawn();
 }
 
-pub fn icon_circle(r: u8, g: u8, b: u8) -> Icon {
-    let width = 64;
-    let height = 64;
-    let mut rgba = Vec::with_capacity((width * height * 4) as usize);
-    let center = 32_i32;
-    let radius = 24_i32;
+pub fn tray_icon(data: &[u8]) -> Icon {
+    let image = image::load_from_memory(data)
+        .expect("Failed to load tray icon")
+        .into_rgba8();
 
-    for y in 0..height {
-        for x in 0..width {
-            let dx = x as i32 - center;
-            let dy = y as i32 - center;
-            
-            if dx * dx + dy * dy <= radius * radius {
-                rgba.extend_from_slice(&[r, g, b, 255]);
-            } else {
-                rgba.extend_from_slice(&[255, 255, 255, 255]);
-            }
-        }
-    }
+    let (width, height) = image.dimensions();
 
-    Icon::from_rgba(rgba, width, height).expect("Failed to create icon")
+    Icon::from_rgba(
+        image.into_raw(),
+        width,
+        height,
+    )
+    .expect("Failed to create tray icon")
+}
+
+pub fn tray_idle_icon() -> Icon {
+    tray_icon(TRAY_IDLE)
+}
+
+pub fn tray_paused_icon() -> Icon {
+    tray_icon(TRAY_PAUSED)
+}
+
+pub fn tray_recording_icon() -> Icon {
+    tray_icon(TRAY_RECORDING)
 }
