@@ -100,7 +100,6 @@ pub fn spawn_monitor_thread(
 
             let mut s = state.lock().unwrap();
 
-            // OBS Crash / Manual Stop Recovery
             if s.recording && !obs_active {
                 s.recording = false;
                 s.active_game = "None".to_string();
@@ -109,9 +108,6 @@ pub fn spawn_monitor_thread(
                 s.ui_needs_update = true;
             }
 
-            // ----------------------------------------------------
-            // START RECORDING LOGIC
-            // ----------------------------------------------------
             if !running_games.is_empty() && !s.recording {
                 let game = &running_games[0];
                 let delay = resolve_delay(&cfg_clone, game, "start_delay");
@@ -135,9 +131,7 @@ pub fn spawn_monitor_thread(
                     }
                 }
             }
-            // ----------------------------------------------------
-            // STOP RECORDING LOGIC
-            // ----------------------------------------------------
+
             else if running_games.is_empty() && s.recording {
                 let delay = resolve_delay(&cfg_clone, &s.active_game, "stop_delay");
 

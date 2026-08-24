@@ -19,12 +19,10 @@ fn main() {
     let config = Arc::new(Mutex::new(initial_config.clone()));
     let state = Arc::new(Mutex::new(RuntimeState::default()));
 
-    // Background Thread
     spawn_monitor_thread(Arc::clone(&config), Arc::clone(&state));
 
     let event_loop = EventLoopBuilder::new().build();
 
-    // Create Tray Menu Items
     let item_game = MenuItem::new("Idle", false, None);
     let item_rec = MenuItem::new("⏹ Not Recording", false, None);
     let item_startup = CheckMenuItem::new("Start with Windows", true, initial_config.start_with_windows, None);
@@ -47,12 +45,11 @@ fn main() {
         &item_exit,
     ]);
 
-    // Build System Tray Icon
     let mut tray_icon = Some(
         TrayIconBuilder::new()
             .with_menu(Box::new(menu))
             .with_tooltip("Idle")
-            .with_icon(icon_circle(255, 0, 0)) // Red icon by default
+            .with_icon(icon_circle(255, 0, 0))
             .build()
             .expect("Failed to build tray icon"),
     );
@@ -60,13 +57,9 @@ fn main() {
     let menu_channel = MenuEvent::receiver();
     let _tray_channel = TrayIconEvent::receiver();
 
-    // Event Loop
     event_loop.run(move |_event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(std::time::Instant::now() + Duration::from_millis(200));
 
-        // ----------------------------------------------------
-        // HANDLE MENU ITEM CLICKS
-        // ----------------------------------------------------
         if let Ok(event) = menu_channel.try_recv() {
             if event.id == item_startup.id() {
                 let mut cfg = config.lock().unwrap();
@@ -81,20 +74,20 @@ fn main() {
                 item_startup.set_checked(new_cfg.start_with_windows);
                 *config.lock().unwrap() = new_cfg;
             } else if event.id == item_pause.id() {
-                let mut s = state.lock().unwrap();
-                s.automation_enabled = !item_pause.is_checked();
-                s.ui_needs_update = true;
-                if !s.automation_enabled {
-                    s.icon_color = IconColor::Orange;
-                    s.tooltip = "Paused".to_string();
+                let mut runtime = state.lock().unwrap();
+                runtime.automation_enabled = !item_pause.is_checked();
+                runtime.ui_needs_update = true;
+                if !runtime.automation_enabled {
+                    runtime.icon_color = IconColor::Orange;
+                    runtime.tooltip = "Paused".to_string();
                 } else {
-                    s.icon_color = if s.recording { IconColor::Green } else { IconColor::Red };
-                    s.tooltip = if s.recording { format!("Recording {}", s.active_game) } else { "Idle".to_string() };
+                    runtime.icon_color = if runtime.recording { IconColor::Green } else { IconColor::Red };
+                    runtime.tooltip = if runtime.recording { format!("Recording {}", runtime.active_game) } else { "Idle".to_string() };
                 }
             } else if event.id == item_exit.id() {
-                let mut s = state.lock().unwrap();
-                s.monitoring = false;
-                if s.recording {
+                let mut runtime = state.lock().unwrap();
+                runtime.monitoring = false;
+                if runtime.recording {
                     obs_stop();
                 }
                 tray_icon.take();
@@ -102,29 +95,26 @@ fn main() {
             }
         }
 
-        // ----------------------------------------------------
-        // SYNC BACKGROUND STATE WITH UI
-        // ----------------------------------------------------
-        let mut s = state.lock().unwrap();
-        if s.ui_needs_update {
+        let mut runtime = state.lock().unwrap();
+        if runtime.ui_needs_update {
             if let Some(tray) = tray_icon.as_mut() {
-                let _ = tray.set_tooltip(Some(&s.tooltip));
+                let _ = tray.set_tooltip(Some(&runtime.tooltip));
                 
-                match s.icon_color {
+                match runtime.icon_color {
                     IconColor::Red => { let _ = tray.set_icon(Some(icon_circle(255, 0, 0))); },
                     IconColor::Green => { let _ = tray.set_icon(Some(icon_circle(0, 255, 0))); },
                     IconColor::Orange => { let _ = tray.set_icon(Some(icon_circle(255, 165, 0))); },
                 }
 
-                if s.recording {
-                    item_game.set_text(format!("🎮 {}", s.active_game));
+                if runtime.recording {
+                    item_game.set_text(format!("🎮 {}", runtime.active_game));
                     item_rec.set_text("⏺ Recording");
                 } else {
                     item_game.set_text("Idle");
                     item_rec.set_text("⏹ Not Recording");
                 }
             }
-            s.ui_needs_update = false;
+            runtime.ui_needs_update = false;
         }
     });
 }

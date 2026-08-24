@@ -28,10 +28,6 @@ pub fn set_startup(enable: bool) {
     }
 }
 
-// =====================================================================
-// STANDALONE BUILD
-// Embeds the binary directly into the executable at compile time.
-// =====================================================================
 pub fn obs_cmd_path() -> PathBuf {
     let mut path = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("."));
     path.pop(); 
