@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use sysinfo::System;
 use sysinfo::ProcessesToUpdate;
 use crate::config::{resolve_delay, AppConfig};
-use crate::utils::{obs_start, obs_stop};
+use crate::utils::{obs_start, obs_stop, obs_scene_switch};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum IconColor {
@@ -54,6 +54,16 @@ pub fn get_running_games(sys: &System, configured_games: &[String]) -> Vec<Strin
         }
     }
     found
+}
+
+fn switch_game_scene(config: &AppConfig, game: &str) {
+    if let Some(game_settings) = config.games.get(game) {
+        if let Some(scene) = &game_settings.scene {
+            if !scene.trim().is_empty() {
+                obs_scene_switch(scene);
+            }
+        }
+    }
 }
 
 pub fn spawn_monitor_thread(
@@ -110,6 +120,8 @@ pub fn spawn_monitor_thread(
                     None => start_delay_timer = Some(Instant::now()),
                     Some(timer) => {
                         if timer.elapsed().as_secs() >= delay && obs_active {
+                            switch_game_scene(&cfg_clone, game);
+
                             obs_start();
                             s.recording = true;
                             s.active_game = game.clone();

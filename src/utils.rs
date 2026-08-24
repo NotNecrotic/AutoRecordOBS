@@ -64,6 +64,10 @@ pub fn obs_stop() {
     run_obs(&["recording", "stop"]);
 }
 
+pub fn obs_scene_switch(scene: &str) {
+    run_obs(&["scene", "switch", scene]);
+}
+
 pub fn open_config_in_editor() {
     let path = crate::config::get_config_path();
     let _ = Command::new("cmd")

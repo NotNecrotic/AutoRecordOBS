@@ -5,12 +5,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
-pub const CONFIG_FILE: &str = "config.json";
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct GameSettings {
     pub start_delay: Value,
     pub stop_delay: Value,
+    pub scene: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -30,6 +29,7 @@ impl Default for AppConfig {
             GameSettings {
                 start_delay: Value::String("default".to_string()),
                 stop_delay: Value::String("default".to_string()),
+                scene: None,
             },
         );
 
