@@ -1,4 +1,3 @@
-
 # AutoRecordOBS
 
 AutoRecordOBS is a system-tray-based utility that automatically detects when your games are running and tells OBS to start and stop recording.
@@ -11,6 +10,7 @@ AutoRecordOBS is a system-tray-based utility that automatically detects when you
 - Automatic game detection: Detects games running and starts recording automatically.
 - System tray control: Minimal UI in the tray for quick access, status updates, and control.
 - Per-game recording: Supports configuring multiple games.
+- Auto scene switching in OBS.
 - Start delay: Delay before recording begins to avoid unnecessary captures such as loading screens.
 - Toggle automation: Pause/resume automatic recording at any time.
 - Config reload & edit: Edit JSON config directly from the tray, and reload without restarting the app.
@@ -21,6 +21,7 @@ AutoRecordOBS is a system-tray-based utility that automatically detects when you
 Download the latest release .exe from GitHub Releases.
 
 Ensure OBS is running with the WebSocket plugin active.
+
 > In the latest version of OBS, this can be done by navigating to **Tools > WebSocket Server Settings** and enabling the **WebSocket Server**.
 
 Run AutoRecordOBS.exe. The app will appear in your system tray.
@@ -42,34 +43,41 @@ All settings are stored in config.json (created automatically on first run).
     "games": {
         "Game.exe": {
             "start_delay": "default",
-            "stop_delay": "default"
+            "stop_delay": "default",
+            "scene": "example_scene_name"
         }
     }
 }
 ```
-- ```check_interval``` → How often (seconds) the app checks for running games.
-- ```start_delay``` → Delay before starting recording after the game is detected running.
-- ```stop_delay``` → Delay before stopping recording after the game is no longer detected running.
-- ```games``` → List of game executables to auto-record. (The start and stop delay for each game overrides the main variables if not set to default.)
+
+- `check_interval` → How often (seconds) the app checks for running games.
+- `start_delay` → Delay before starting recording after the game is detected running.
+- `stop_delay` → Delay before stopping recording after the game is no longer detected running.
+- `scene` → The OBS scene that will be switched to when the game is detected running.
+- `games` → List of game executables to auto-record. (The start and stop delay for each game overrides the main variables if not set to default.)
 
 > Note: Games will need to be added to the config in order for this program to work.
 
 ## Development
 
 Prerequisites
- - Rust installed (includes cargo)
+
+- Rust installed (includes cargo)
 
 1. Clone the repository:
+
 ```
 git clone https://github.com/NotNecrotic/AutoRecordOBS.git
 cd AutoRecordOBS
 ```
 
 2. Build the release binary:
+
 ```
 cargo build
 ```
-The executable will be in ```target/release/AutoRecordOBS.exe```. It will automatically handle the extraction of its internal dependencies when run.
+
+The executable will be in `target/release/AutoRecordOBS.exe`. It will automatically handle the extraction of its internal dependencies when run.
 
 ## Notes
 
