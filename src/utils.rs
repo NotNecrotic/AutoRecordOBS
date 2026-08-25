@@ -5,6 +5,9 @@ use tray_icon::Icon;
 use winreg::enums::*;
 use winreg::RegKey;
 use std::os::windows::process::CommandExt;
+use windows::Win32::Foundation::GetLastError;
+use windows::Win32::System::Threading::CreateMutexW;
+use windows::core::w;
 
 pub const APP_NAME: &str = "AutoRecordOBS";
 const OBS_CMD_BYTES: &[u8] = include_bytes!("../bin/obs-cmd.exe");
@@ -99,4 +102,16 @@ pub fn tray_paused_icon() -> Icon {
 
 pub fn tray_recording_icon() -> Icon {
     tray_icon(TRAY_RECORDING)
+}
+
+pub fn ensure_single_instance() -> bool {
+    unsafe {
+        let mutex = CreateMutexW(None, false, w!("AutoRecordOBS_SingleInstance"));
+
+        if mutex.is_err() {
+            return false;
+        }
+
+        GetLastError().0 != 183
+    }
 }

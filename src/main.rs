@@ -20,9 +20,14 @@ use crate::utils::{
     tray_idle_icon,
     tray_paused_icon,
     tray_recording_icon,
+    ensure_single_instance,
 };
 
 fn main() {
+    if !ensure_single_instance() {
+        return;
+    }
+    
     let initial_config = load_config();
     set_startup(initial_config.start_with_windows);
 
