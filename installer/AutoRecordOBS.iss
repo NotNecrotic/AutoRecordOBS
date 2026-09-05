@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "AutoRecordOBS"
-#define MyAppVersion "2.1.0"
+#define MyAppVersion "2.1.1"
 #define MyAppExeName "AutoRecordOBS.exe"
 
 [Setup]
@@ -26,7 +26,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
-OutputBaseFilename=AutoRecordOBS-2.1.0-Setup
+OutputBaseFilename=AutoRecordOBS-2.1.1-Setup
 SetupIconFile=..\assets\icon.ico
 SolidCompression=yes
 WizardStyle=modern
