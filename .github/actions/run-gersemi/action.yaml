@@ -55,5 +55,7 @@ runs:
 
         print ::group::Run gersemi
         local -a changes=(${(s:,:)CHANGED_FILES//[\[\]\'\"]/})
-        ./build-aux/run-gersemi --fail-${{ inputs.failCondition }} --check ${changes}
+        # Run via zsh with the formatter named explicitly: no symlinks or executable bits needed,
+        # which a Windows checkout cannot keep.
+        FORMATTER_NAME=gersemi zsh ./build-aux/.run-format.zsh --fail-${{ inputs.failCondition }} --check ${changes}
         print ::endgroup::
