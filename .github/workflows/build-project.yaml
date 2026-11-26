@@ -115,7 +115,7 @@ jobs:
           if ( $LASTEXITCODE -ne 0 ) { throw "ISCC failed with exit code $LASTEXITCODE" }
 
       - name: Upload Artifacts 📡
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-windows-x64-${{ needs.check-event.outputs.commitHash }}
           path: ${{ github.workspace }}/release/${{ steps.setup.outputs.pluginName }}-${{ steps.setup.outputs.pluginVersion }}-windows-x64*.*
