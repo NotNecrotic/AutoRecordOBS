@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/autopilot">
+        <file alias="gamepad.svg">icons/gamepad.svg</file>
+        <file alias="record.svg">icons/record.svg</file>
+        <file alias="idle.svg">icons/idle.svg</file>
+        <file alias="waiting.svg">icons/waiting.svg</file>
+        <file alias="paused.svg">icons/paused.svg</file>
+    </qresource>
+</RCC>

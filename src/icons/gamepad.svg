@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="16" height="16">
+  <defs>
+    <mask id="pad">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="M18 25h4v4h4v4h-4v4h-4v-4h-4v-4h4z" fill="#000"/><circle cx="40.5" cy="34" r="2.6" fill="#000"/><circle cx="45" cy="29.5" r="2.6" fill="#000"/>
+    </mask>
+  </defs>
+  <path d="M20 18h24c7 0 11.5 4 13 10.5l3.5 15c1.3 5.6-2.3 10.5-7.5 10.5c-3 0-5.5-1.6-7-4.2l-2.6-4.3H20.6l-2.6 4.3c-1.5 2.6-4 4.2-7 4.2c-5.2 0-8.8-4.9-7.5-10.5l3.5-15C8.5 22 13 18 20 18z" fill="currentColor" mask="url(#pad)"/>
+</svg>
