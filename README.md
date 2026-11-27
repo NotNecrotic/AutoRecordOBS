@@ -22,7 +22,7 @@ Launch a configured game and Autopilot takes it from there! It switches to the g
 - **Per-game scene switching**: switches to a chosen scene just before recording starts, and back to your previous scene once the game closes (unless you picked a different scene yourself in the meantime).
 - **Start/stop delays**: so loading screens and quick restarts don't cause extra recordings.
 - **Status bar indicator**: an "Autopilot: …" item next to OBS's REC timer shows what's happening (idle, countdown, which game is recording, paused). Click it to pause automation, open settings or show the dock. Hover it to see where the recording is being saved.
-- **Games dock**: lists your games with a dot for each one's state: grey when closed, green when running, amber while counting down, red while recording. Add games with **+**, or select one to remove it or move it up and down, without opening settings. Styled like OBS's Scenes dock and follows your theme.
+- **Games dock**: lists your games with a dot for each one's state: grey when closed, green when running, amber while counting down, red while recording. Add games with **+**, drag them to reorder, or select one to remove it or move it up and down, without opening settings. Styled like OBS's Scenes dock and follows your theme.
 
 ## Requirements
 
@@ -45,7 +45,8 @@ Launch a configured game and Autopilot takes it from there! It switches to the g
 Open it from **Docks → Autopilot**. Each game's dot shows what it's doing; hover a game for details.
 
 - **+** adds a game (**Browse for Game…** or **Add Running Program…**).
-- Select a game to remove it (trash) or change its priority (arrows). Click anywhere else to deselect.
+- Drag a game up or down to change its priority, like reordering scenes.
+- Select a game to remove it (trash) or move it with the arrows. Click anywhere else to deselect.
 - **Pause** stops Autopilot from starting new recordings; a recording already running carries on.
 - The **gear** opens the settings.
 
@@ -85,7 +86,7 @@ Add games with the **+** button (**Browse for Game…** to pick the `.exe` from 
 
 The capture source is matched by the game's `.exe`, so it keeps working when the game changes its window title, and it works even if the game's window opens after recording starts.
 
-If several configured games are running, the highest one in the list is recorded; use the arrow buttons to reorder.
+If several configured games are running, the highest one in the list is recorded; use the arrow buttons (or drag games in the dock) to reorder.
 
 The subfolder is relative to the recording path set in **Settings → Output** (Simple or Advanced mode, including Advanced mode's _Custom Output (FFmpeg)_ when it writes to a file). Autopilot changes the path only while the recording starts and then puts it back, so your OBS settings are never permanently changed.
 

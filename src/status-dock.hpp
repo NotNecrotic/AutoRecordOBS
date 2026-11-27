@@ -31,8 +31,8 @@ class QToolBar;
 /*
  * Games dock, built the same way as OBS's Scenes dock: a list of the watched
  * games (a coloured dot shows running / starting / recording) above a toolbar.
- * Selecting a game reveals remove and move up/down, so the list can be managed
- * without opening settings. The overall state lives in the status bar item.
+ * Selecting a game reveals remove and move up/down, and games can be dragged
+ * to reorder them, so the list can be managed without opening settings. The overall state lives in the status bar item.
  */
 class StatusDock : public QWidget {
 	Q_OBJECT
@@ -54,6 +54,7 @@ private:
 	void addGame(const QString &executable);
 	void removeSelected();
 	void moveSelected(int delta);
+	void applyDraggedOrder();
 
 	QPointer<AutoRecorder> recorder;
 	bool updatingTheme = false;

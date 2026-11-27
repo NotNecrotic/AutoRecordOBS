@@ -33,6 +33,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <QToolBar>
 #include <QVBoxLayout>
 
+#include <algorithm>
+
 #include "auto-recorder.hpp"
 #include "game-picker.hpp"
 #include "settings-dialog.hpp"
@@ -74,6 +76,9 @@ StatusDock::StatusDock(AutoRecorder *recorder_, QWidget *parent) : QWidget(paren
 	games->setFrameShape(QFrame::NoFrame);
 	games->installEventFilter(this);
 	games->viewport()->installEventFilter(this);
+	/* Drag to reorder, like scenes. The list order is the game priority. */
+	games->setDragDropMode(QAbstractItemView::InternalMove);
+	games->setDefaultDropAction(Qt::MoveAction);
 
 	noGames = new QLabel(tr_("Dock.NoGames"), this);
 	noGames->setWordWrap(true);
@@ -118,6 +123,9 @@ StatusDock::StatusDock(AutoRecorder *recorder_, QWidget *parent) : QWidget(paren
 			SettingsDialog::showFor(recorder, window());
 	});
 	connect(games, &QListWidget::itemSelectionChanged, this, &StatusDock::updateToolbar);
+	/* Queued so the config is saved after the list has finished handling the drop. */
+	connect(games->model(), &QAbstractItemModel::rowsMoved, this, &StatusDock::applyDraggedOrder,
+		Qt::QueuedConnection);
 	connect(recorder, &AutoRecorder::statusChanged, this, &StatusDock::refresh);
 
 	loadTheme();
@@ -248,6 +256,34 @@ void StatusDock::moveSelected(int delta)
 	config.games.swapItemsAt(row, target);
 	recorder->setConfig(config);
 	games->setCurrentRow(target);
+}
+
+void StatusDock::applyDraggedOrder()
+{
+	if (!recorder)
+		return;
+
+	/* The list was reordered by a drop; put the games in the config in the same order. */
+	PluginConfig config = recorder->config();
+	QList<GameEntry> reordered;
+	for (int i = 0; i < games->count(); i++) {
+		const QString executable = games->item(i)->text();
+		const auto match = std::find_if(config.games.cbegin(), config.games.cend(), [&](const GameEntry &game) {
+			return game.executable.compare(executable, Qt::CaseInsensitive) == 0;
+		});
+		if (match == config.games.cend())
+			break;
+		reordered.append(*match);
+	}
+
+	if (reordered.size() != config.games.size()) {
+		/* The list no longer matches the config (it changed mid-drag); redraw from the config. */
+		refresh();
+		return;
+	}
+
+	config.games = reordered;
+	recorder->setConfig(config);
 }
 
 void StatusDock::refresh()
