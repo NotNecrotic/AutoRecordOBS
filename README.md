@@ -23,6 +23,7 @@ Launch a configured game and Autopilot takes it from there! It switches to the g
 - **Start/stop delays**: so loading screens and quick restarts don't cause extra recordings.
 - **Status bar indicator**: an "Autopilot: …" item next to OBS's REC timer shows what's happening (idle, countdown, which game is recording, paused). Click it to pause automation, open settings or show the dock. Hover it to see where the recording is being saved.
 - **Games dock**: lists your games with a dot for each one's state: grey when closed, green when running, amber while counting down, red while recording. Add games with **+**, or select one to remove it or move it up and down, without opening settings. Styled like OBS's Scenes dock and follows your theme.
+- **Update notifications**: when a new release is out, "Update available" appears next to the status bar indicator, with a link to the download.
 
 ## Requirements
 
@@ -61,12 +62,13 @@ Open **Tools → Autopilot Settings**, click the status bar indicator, or use th
   <img src="assets/readme/settings-general.png" alt="Autopilot Settings, General page" width="720">
 </p>
 
-| Setting               | Default | Description                                                                                                                         |
-| --------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Check for games every | 5 s     | How often running programs are checked.                                                                                             |
-| Start delay           | 0 s     | How long a game must be running before recording starts.                                                                            |
-| Stop delay            | 0 s     | How long to keep recording after a game closes.                                                                                     |
-| Capture source        | None    | A Game Capture or Window Capture source to point at each game's window when its recording starts. _None_ leaves your sources alone. |
+| Setting                         | Default | Description                                                                                                                         |
+| ------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Check for games every           | 5 s     | How often running programs are checked.                                                                                             |
+| Start delay                     | 0 s     | How long a game must be running before recording starts.                                                                            |
+| Stop delay                      | 0 s     | How long to keep recording after a game closes.                                                                                     |
+| Capture source                  | None    | A Game Capture or Window Capture source to point at each game's window when its recording starts. _None_ leaves your sources alone. |
+| Check for updates automatically | On      | Look for a newer release when OBS starts and once a day. **Check Now** checks right away.                                           |
 
 **Games**
 
@@ -88,6 +90,10 @@ The capture source is matched by the game's `.exe`, so it keeps working when the
 If several configured games are running, the highest one in the list is recorded; use the arrow buttons to reorder.
 
 The subfolder is relative to the recording path set in **Settings → Output** (Simple or Advanced mode, including Advanced mode's _Custom Output (FFmpeg)_ when it writes to a file). Autopilot changes the path only while the recording starts and then puts it back, so your OBS settings are never permanently changed.
+
+### Updates
+
+Autopilot asks GitHub's public API for the latest release (`api.github.com/repos/NotNecrotic/obs-autopilot/releases/latest`) about 10 seconds after OBS starts and then once a day. The request contains nothing about you or your setup beyond what any web request includes (your IP address and a `User-Agent` naming the Autopilot version). If a newer version exists, "Update available" appears in the status bar, and **Update to …** in its menu opens the release page; nothing is downloaded or installed for you. Turn it off with **Check for updates automatically** in Settings → General.
 
 ### Where settings are stored
 

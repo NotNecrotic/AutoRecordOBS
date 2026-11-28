@@ -32,6 +32,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "auto-recorder.hpp"
 #include "settings-dialog.hpp"
 #include "theme.hpp"
+#include "update-checker.hpp"
 
 namespace {
 
@@ -56,21 +57,28 @@ QString shortName(const QString &executable)
 StatusBarItem::StatusBarItem(AutoRecorder *recorder_, const char *dockId_, QWidget *parent)
 	: QWidget(parent),
 	  recorder(recorder_),
+	  updates(UpdateChecker::instance()),
 	  dockId(QString::fromUtf8(dockId_))
 {
 	icon = new QLabel(this);
 	icon->setFixedSize(kIconSize, kIconSize);
 	text = new QLabel(this);
+	updateBadge = new QLabel(tr_("Bar.UpdateAvailable"), this);
+	Theme::setClasses(updateBadge, "text-warning");
+	updateBadge->hide();
 
 	auto *layout = new QHBoxLayout(this);
 	layout->setContentsMargins(6, 0, 6, 0);
 	layout->setSpacing(4);
 	layout->addWidget(icon);
 	layout->addWidget(text);
+	layout->addWidget(updateBadge);
 
 	setCursor(Qt::PointingHandCursor);
 
 	connect(recorder, &AutoRecorder::statusChanged, this, &StatusBarItem::refresh);
+	if (updates)
+		connect(updates, &UpdateChecker::stateChanged, this, &StatusBarItem::refresh);
 	connect(&clock, &QTimer::timeout, this, &StatusBarItem::refresh);
 	clock.start(1000);
 
@@ -158,6 +166,10 @@ void StatusBarItem::refresh()
 		tip << tr_("Bar.SavingTo").arg(QDir::toNativeSeparators(s.outputDir));
 	if (!s.automationEnabled && ownsRecording)
 		tip << tr_("Bar.PausedStillRecording");
+	const bool updateAvailable = updates && updates->state() == UpdateChecker::State::UpdateAvailable;
+	updateBadge->setVisible(updateAvailable);
+	if (updateAvailable)
+		tip << tr_("Bar.UpdateTip").arg(updates->latestVersion(), UpdateChecker::currentVersion());
 	tip << tr_("Bar.ClickHint");
 	setToolTip(tip.join('\n'));
 }
@@ -178,6 +190,11 @@ void StatusBarItem::showMenu()
 		return;
 
 	QMenu menu(this);
+	QAction *update = nullptr;
+	if (updates && updates->state() == UpdateChecker::State::UpdateAvailable) {
+		update = menu.addAction(tr_("Menu.Update").arg(updates->latestVersion()));
+		menu.addSeparator();
+	}
 	QAction *pause = menu.addAction(tr_("Menu.PauseAutomation"));
 	pause->setCheckable(true);
 	pause->setChecked(!recorder->automationEnabled());
@@ -191,7 +208,10 @@ void StatusBarItem::showMenu()
 
 	if (!recorder || !chosen)
 		return;
-	if (chosen == pause) {
+	if (chosen == update) {
+		if (updates)
+			updates->openReleasePage();
+	} else if (chosen == pause) {
 		recorder->setAutomationEnabled(!pause->isChecked());
 	} else if (chosen == settings) {
 		SettingsDialog::showFor(recorder, window());

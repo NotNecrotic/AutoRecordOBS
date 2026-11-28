@@ -25,11 +25,13 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 class AutoRecorder;
 class QLabel;
+class UpdateChecker;
 
 /*
  * Compact "Autopilot: …" indicator in OBS's bottom status bar, next to the
  * REC timer. Clicking it opens a menu to pause automation, open settings or
- * show the dock.
+ * show the dock. When a newer release exists, "Update available" is shown
+ * beside it and the menu links to the release.
  */
 class StatusBarItem : public QWidget {
 	Q_OBJECT
@@ -47,10 +49,12 @@ private:
 	void showMenu();
 
 	QPointer<AutoRecorder> recorder;
+	QPointer<UpdateChecker> updates;
 	QString dockId;
 	QTimer clock; /* Keeps countdowns ticking every second. */
 	QLabel *icon = nullptr;
 	QLabel *text = nullptr;
+	QLabel *updateBadge = nullptr;
 	bool updatingTheme = false;
 
 	QColor warning;

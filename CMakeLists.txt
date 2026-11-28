@@ -27,7 +27,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Svg)
 
 target_link_libraries(
   ${CMAKE_PROJECT_NAME}
-  PRIVATE OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets Qt6::Svg
+  PRIVATE OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets Qt6::Svg winhttp
 )
 
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES AUTOMOC ON AUTORCC ON)
@@ -58,6 +58,8 @@ target_sources(
     src/game-picker.hpp
     src/theme.cpp
     src/theme.hpp
+    src/update-checker.cpp
+    src/update-checker.hpp
     src/resources.qrc
 )
 

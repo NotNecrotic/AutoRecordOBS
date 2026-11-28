@@ -39,6 +39,8 @@ struct PluginConfig {
 	int startDelay = 0;
 	int stopDelay = 0;
 	bool automationEnabled = true;
+	/* Look for a newer Autopilot release on GitHub at startup and once a day. */
+	bool checkForUpdates = true;
 	/* Game/Window Capture source every game is pointed at unless it names its own. Empty = none. */
 	QString captureSource;
 	QList<GameEntry> games;

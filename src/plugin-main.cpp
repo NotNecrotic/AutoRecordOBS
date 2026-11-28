@@ -29,6 +29,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "settings-dialog.hpp"
 #include "status-bar-item.hpp"
 #include "status-dock.hpp"
+#include "update-checker.hpp"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
@@ -40,6 +41,7 @@ namespace {
 constexpr const char *kDockId = "AutopilotDock";
 
 AutoRecorder *recorder = nullptr;
+UpdateChecker *updateChecker = nullptr;
 QPointer<StatusBarItem> statusBarItem;
 
 void addStatusBarItem()
@@ -87,10 +89,14 @@ void onFrontendEvent(enum obs_frontend_event event, void *)
 	case OBS_FRONTEND_EVENT_FINISHED_LOADING:
 		addStatusBarItem();
 		recorder->start();
+		if (updateChecker)
+			updateChecker->start();
 		break;
 	case OBS_FRONTEND_EVENT_EXIT:
 		/* Tear down while OBS and Qt are still fully alive. */
 		delete statusBarItem;
+		delete updateChecker;
+		updateChecker = nullptr;
 		recorder->shutdown();
 		delete recorder;
 		recorder = nullptr;
@@ -115,6 +121,7 @@ MODULE_EXPORT const char *obs_module_description(void)
 bool obs_module_load(void)
 {
 	recorder = new AutoRecorder();
+	updateChecker = new UpdateChecker(recorder);
 
 	auto *dock = new StatusDock(recorder, mainWindow());
 	if (!obs_frontend_add_dock_by_id(kDockId, obs_module_text("Dock.Title"), dock)) {
@@ -132,6 +139,8 @@ bool obs_module_load(void)
 void obs_module_unload(void)
 {
 	obs_frontend_remove_event_callback(onFrontendEvent, nullptr);
+	delete updateChecker;
+	updateChecker = nullptr;
 	delete recorder;
 	recorder = nullptr;
 	obs_log(LOG_INFO, "plugin unloaded");

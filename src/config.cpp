@@ -106,11 +106,13 @@ void readConfig(obs_data_t *data, PluginConfig &config)
 	obs_data_set_default_int(data, "start_delay", config.startDelay);
 	obs_data_set_default_int(data, "stop_delay", config.stopDelay);
 	obs_data_set_default_bool(data, "automation_enabled", config.automationEnabled);
+	obs_data_set_default_bool(data, "check_for_updates", config.checkForUpdates);
 
 	config.checkInterval = clampInterval(obs_data_get_int(data, "check_interval"));
 	config.startDelay = clampDelay(obs_data_get_int(data, "start_delay"));
 	config.stopDelay = clampDelay(obs_data_get_int(data, "stop_delay"));
 	config.automationEnabled = obs_data_get_bool(data, "automation_enabled");
+	config.checkForUpdates = obs_data_get_bool(data, "check_for_updates");
 	config.captureSource = takeString(data, "capture_source");
 
 	OBSDataArrayAutoRelease games = obs_data_get_array(data, "games");
@@ -200,6 +202,7 @@ bool save(const PluginConfig &config, obs_data_array_t *toggleHotkey)
 	obs_data_set_int(data, "start_delay", config.startDelay);
 	obs_data_set_int(data, "stop_delay", config.stopDelay);
 	obs_data_set_bool(data, "automation_enabled", config.automationEnabled);
+	obs_data_set_bool(data, "check_for_updates", config.checkForUpdates);
 	obs_data_set_string(data, "capture_source", config.captureSource.toUtf8().constData());
 
 	OBSDataArrayAutoRelease games = obs_data_array_create();

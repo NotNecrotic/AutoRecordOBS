@@ -26,6 +26,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "config.hpp"
 
 class AutoRecorder;
+class UpdateChecker;
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
@@ -60,6 +62,7 @@ private:
 	void updatePathPreview();
 	void updateButtons();
 	void updateDefaultCaptureLabel();
+	void updateUpdateStatus();
 	int captureIndex(QComboBox *combo, const QString &source);
 
 	void addGame(const QString &executable);
@@ -72,6 +75,7 @@ private:
 	void setDirty(bool changed);
 
 	QPointer<AutoRecorder> recorder;
+	QPointer<UpdateChecker> updates;
 	QStringList sceneNames;
 	QString baseDirectory;
 	QStringList captureSources;
@@ -89,6 +93,9 @@ private:
 	QSpinBox *startDelay = nullptr;
 	QSpinBox *stopDelay = nullptr;
 	QComboBox *defaultCaptureCombo = nullptr;
+	QCheckBox *checkForUpdates = nullptr;
+	QLabel *updateStatus = nullptr;
+	QPushButton *checkNowButton = nullptr;
 
 	QListWidget *gamesView = nullptr;
 	QPushButton *removeButton = nullptr;

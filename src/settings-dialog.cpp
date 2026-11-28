@@ -22,6 +22,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <obs-module.h>
 
 #include <QAbstractButton>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -49,6 +50,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "game-picker.hpp"
 #include "recording-path.hpp"
 #include "theme.hpp"
+#include "update-checker.hpp"
 
 namespace {
 
@@ -156,6 +158,7 @@ void SettingsDialog::showFor(AutoRecorder *recorder, QWidget *parent)
 SettingsDialog::SettingsDialog(AutoRecorder *recorder_, QWidget *parent)
 	: QDialog(parent),
 	  recorder(recorder_),
+	  updates(UpdateChecker::instance()),
 	  sceneNames(currentSceneNames()),
 	  baseDirectory(RecordingPathOverride::baseDirectory()),
 	  captureSources(CaptureTarget::captureSourceNames())
@@ -238,12 +241,76 @@ QWidget *SettingsDialog::buildGeneralPage()
 	captureForm->addRow(labelWithHelp(capture, tr_("Settings.CaptureSource"), tr_("Settings.CaptureSource.Help")),
 			    defaultCaptureCombo);
 
+	checkForUpdates = new QCheckBox(tr_("Settings.CheckForUpdates"), page);
+	connect(checkForUpdates, &QCheckBox::toggled, this, &SettingsDialog::markDirty);
+
+	updateStatus = new QLabel(page);
+	updateStatus->setTextFormat(Qt::RichText);
+	updateStatus->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+	connect(updateStatus, &QLabel::linkActivated, this, [this]() {
+		if (updates)
+			updates->openReleasePage();
+	});
+	checkNowButton = new QPushButton(tr_("Settings.CheckNow"), page);
+	connect(checkNowButton, &QPushButton::clicked, this, [this]() {
+		if (updates)
+			updates->checkNow();
+	});
+	if (updates)
+		connect(updates, &UpdateChecker::stateChanged, this, &SettingsDialog::updateUpdateStatus);
+
+	auto *versionRow = new QHBoxLayout();
+	versionRow->setContentsMargins(0, 0, 0, 0);
+	versionRow->addWidget(updateStatus, 1);
+	versionRow->addWidget(checkNowButton);
+
+	auto *updatesGroup = new QGroupBox(tr_("Settings.Updates"), page);
+	auto *updatesForm = makeForm(updatesGroup);
+	updatesForm->addRow(tr_("Settings.Version"), versionRow);
+	updatesForm->addRow(QString(), checkForUpdates);
+	updateUpdateStatus();
+
 	auto *layout = new QVBoxLayout(page);
 	layout->setContentsMargins(0, 0, 0, 0);
 	layout->addWidget(detection);
 	layout->addWidget(capture);
+	layout->addWidget(updatesGroup);
 	layout->addStretch(1);
 	return page;
+}
+
+void SettingsDialog::updateUpdateStatus()
+{
+	using State = UpdateChecker::State;
+	const QString version = UpdateChecker::currentVersion();
+	const State state = updates ? updates->state() : State::Idle;
+
+	QString text = version;
+	QString tip;
+	switch (state) {
+	case State::Idle:
+		break;
+	case State::Checking:
+		text = tr_("Settings.Version.Checking").arg(version);
+		break;
+	case State::UpToDate:
+		text = tr_("Settings.Version.UpToDate").arg(version);
+		break;
+	case State::UpdateAvailable:
+		/* The link opens the release page through UpdateChecker, which only allows github.com. */
+		text = tr_("Settings.Version.Available")
+			       .arg(version, QStringLiteral("<a href=\"#release\">%1</a>")
+						     .arg(tr_("Settings.Version.Download")
+								  .arg(updates->latestVersion().toHtmlEscaped())));
+		break;
+	case State::Failed:
+		text = tr_("Settings.Version.Failed").arg(version);
+		tip = updates->errorText();
+		break;
+	}
+	updateStatus->setText(text);
+	updateStatus->setToolTip(tip);
+	checkNowButton->setEnabled(updates && state != State::Checking);
 }
 
 QWidget *SettingsDialog::buildGamesPage()
@@ -382,6 +449,7 @@ void SettingsDialog::load(const PluginConfig &config)
 	stopDelay->setValue(config.stopDelay);
 	defaultCaptureCombo->setCurrentIndex(captureIndex(defaultCaptureCombo, config.captureSource));
 	updateDefaultCaptureLabel();
+	checkForUpdates->setChecked(config.checkForUpdates);
 
 	const int keep = current;
 	gameList = config.games;
@@ -535,6 +603,7 @@ bool SettingsDialog::collect(PluginConfig &config)
 	config.startDelay = startDelay->value();
 	config.stopDelay = stopDelay->value();
 	config.captureSource = defaultCaptureCombo->currentData().toString();
+	config.checkForUpdates = checkForUpdates->isChecked();
 	config.games.clear();
 
 	QSet<QString> seen;
